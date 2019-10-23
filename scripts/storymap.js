@@ -22,7 +22,9 @@ $(window).on('load', function() {
    // Use Tabletop to fetch data from the Google sheet
    mapData = Tabletop.init({
      key: googleDocURL,
-     callback: function(data, mapData) { initMap(); }
+     callback: function(data, mapData) { 
+       initMap(); 
+      }
    });
 
   /**
@@ -66,6 +68,37 @@ $(window).on('load', function() {
     }).addTo(map);
   }
 
+  // Add play button
+  function addPlayButton(){
+    L.easyButton({
+      id: 'play-button',  // an id for the generated button
+      position: 'topright',      // inherited from L.Control -- the corner it goes in
+      type: 'replace',          // set to animate when you're comfy with css
+      leafletClasses: true,     // use leaflet classes to style the button?
+      states:[{                 // specify different icons and responses for your button
+        stateName: 'play',
+        onClick: function(button, map){
+          console.log("Starting playback");
+          button.state("stop");
+        },
+        title: 'Click to play recordings in sequence',
+        icon: 'fa-play'
+      },
+      {                 
+        stateName: 'stop',
+        onClick: function(button, map){
+          console.log("Stopping playback");
+          button.state("play");
+        },
+        title: 'Click to stop playback',
+        icon: 'fa-stop'
+      },
+    ]
+    }).addTo(map);
+  }
+
+
+
   function initMap() {
     var options = mapData.sheets(constants.optionsSheetName).elements;
     createDocumentSettings(options);
@@ -88,6 +121,9 @@ $(window).on('load', function() {
 
     // Load tiles
     addBaseMap();
+
+    // Add button
+    addPlayButton();
 
     // Add zoom controls if needed
     if (getSetting('_zoomControls') !== 'off') {
@@ -385,6 +421,7 @@ $(window).on('load', function() {
 
     $('div#container0').addClass("in-focus");
     $('div#contents').animate({scrollTop: '1px'});
+
   }
 
 
