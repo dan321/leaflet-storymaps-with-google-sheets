@@ -1,6 +1,10 @@
 $(window).on('load', function() {
   var documentSettings = {};
 
+  // Continuous play variable
+  var continuousPlay = true;
+
+
   // Some constants, such as default settings
   const CHAPTER_ZOOM = 15;
 
@@ -99,6 +103,24 @@ $(window).on('load', function() {
       markers[n]._icon.className = markers[n]._icon.className.replace(from, to);
     }
 
+    var openMarkerPopup = function(n) {
+      markers[n].openPopup();
+    }
+
+    var closeMarkerPopup = function(n) {
+      markers[n].closePopup();
+    }
+
+    // var bringMarkerToFront = function(n) {
+    //   markers[n].zIndexOffset = 100;
+    // }
+
+    // var bringMarkerToBack = function(n) {
+    //   markers[n].zIndexOffset = 0;
+    // }
+
+
+
     var pixelsAbove = [];
     var chapterCount = 0;
 
@@ -112,15 +134,27 @@ $(window).on('load', function() {
         var lat = parseFloat(c['Latitude']);
         var lon = parseFloat(c['Longitude']);
 
-        markers.push(
-          L.marker([lat, lon], {
-            icon: L.ExtraMarkers.icon({
-              icon: 'fa-number',
-              number: ++chapterCount,
-              markerColor: 'blue'
-            })
-          }
-        ));
+        if (c['Type'] === "music") {
+          markers.push(
+            L.marker([lat, lon], {
+              icon: L.ExtraMarkers.icon({
+                icon: 'fa fa-music',
+                markerColor: 'red'
+              })
+            }
+           ).bindPopup(`<p>${c["Chapter"]}</p>`)
+          )
+        } else if (c['Type'] === "speech") {
+          markers.push(
+            L.marker([lat, lon], {
+              icon: L.ExtraMarkers.icon({
+                icon: 'fa fa-comment',
+                markerColor: 'blue'
+              })
+            }
+            ).bindPopup(`<p>${c["Chapter"]}</p>`)
+          )
+        }
 
       } else {
         markers.push(null);
@@ -129,7 +163,7 @@ $(window).on('load', function() {
       // Add chapter container
       var container = $('<div></div>', {
         id: 'container' + i,
-        class: 'chapter-container'
+        class: `chapter-container ${c['Type'] === "music" ? "music-chapter-container": "speech-chapter-container"}`
       });
 
 
@@ -185,10 +219,12 @@ $(window).on('load', function() {
         }).append(media).after(source);
       }
 
+      var typeSymbol = c["Type"] === "music" ? "<i class='fa fa-music'></i>": "<i class='fa fa-comment'></i>";
+
       container
-        .append('<p class="chapter-header">' + c['Chapter'] + '</p>')
+        .append('<p class="chapter-header">' + c['Chapter'] + '\xa0'+ typeSymbol +'</p>')
         .append(media ? mediaContainer : '')
-        .append(media ? source : '')
+        // .append(media ? source : '')
         .append('<p class="description">' + c['Description'] + '</p>');
 
       $('#contents').append(container);
@@ -228,13 +264,32 @@ $(window).on('load', function() {
           $('.chapter-container').removeClass("in-focus").addClass("out-focus");
           $('div#container' + i).addClass("in-focus").removeClass("out-focus");
 
+          // Pause all audio on page
+          var allAudio = document.querySelectorAll('audio');
+          
+          allAudio.forEach(node => {
+            node.pause()
+          })
+
+
+          // Play current audio element
+          document.querySelector('div#container' + i)
+                  .querySelector("audio")
+                  .play()
+                  .catch(error => console.log(`Play prevented ${error}`));
+
+          
+
           currentlyInFocus = i;
 
           for (k = 0; k < pixelsAbove.length - 1; k++) {
-            changeMarkerColor(k, 'orange', 'blue');
+            // changeMarkerColor(k, 'black', 'blue');
+            closeMarkerPopup(k);
           }
 
-          changeMarkerColor(i, 'blue', 'orange');
+          // changeMarkerColor(i, 'blue', 'black');
+          openMarkerPopup(i);
+
 
           // Remove overlay tile layer if needed
           if (map.hasLayer(overlay)) {
@@ -298,9 +353,6 @@ $(window).on('load', function() {
       }\
       a, a:visited, a:hover {\
         color: " + trySetting('_narrativeLink', 'blue') + " \
-      }\
-      .in-focus {\
-        background-color: " + trySetting('_narrativeActive', '#f0f0f0') + " \
       }")
       .appendTo("head");
 
