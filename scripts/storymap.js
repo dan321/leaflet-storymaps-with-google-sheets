@@ -4,6 +4,13 @@ $(window).on('load', function() {
   // Continuous play variable
   var continuousPlay = true;
 
+  // Move marker variable to global scope
+  var markers = [];
+
+
+  // Interval function for playback
+  // Defined in global scope so that it can easily be stoppe/started
+  var playInterval;
 
   // Some constants, such as default settings
   const CHAPTER_ZOOM = 15;
@@ -79,6 +86,7 @@ $(window).on('load', function() {
         stateName: 'play',
         onClick: function(button, map){
           console.log("Starting playback");
+          playLoop(markers);
           button.state("stop");
         },
         title: 'Click to play recordings in sequence',
@@ -88,6 +96,7 @@ $(window).on('load', function() {
         stateName: 'stop',
         onClick: function(button, map){
           console.log("Stopping playback");
+          stopLoop();
           button.state("play");
         },
         title: 'Click to stop playback',
@@ -134,7 +143,6 @@ $(window).on('load', function() {
 
     var chapters = mapData.sheets(constants.chaptersSheetName).elements;
 
-    var markers = [];
     changeMarkerColor = function(n, from, to) {
       markers[n]._icon.className = markers[n]._icon.className.replace(from, to);
     }
@@ -298,14 +306,10 @@ $(window).on('load', function() {
           // Remove styling for the old in-focus chapter and
           // add it to the new active chapter
           $('.chapter-container').removeClass("in-focus").addClass("out-focus");
-          $('div#container' + i).addClass("in-focus").removeClass("out-focus");
+          $('div#container' + i).addClass("in-focus").removeClass("out-focus"); 
 
-          // Pause all audio on page
-          var allAudio = document.querySelectorAll('audio');
-          
-          allAudio.forEach(node => {
-            node.pause()
-          })
+          // Pause all current audio
+          pauseAllAudio();
 
 
           // Play current audio element
@@ -450,3 +454,43 @@ $(window).on('load', function() {
   }
 
 });
+
+
+// Test function for iterating through points
+function playLoop(markers) {
+  
+  playInterval = setInterval(function(){
+    let randomMarker = markers[Math.floor(Math.random() * markers.length)];
+    randomMarker.fire("click");
+    
+  }, 22000);
+
+}
+
+function stopLoop(){
+  clearInterval(playInterval);
+}
+
+
+function pauseAllAudio(){
+  // Pause all audio on page
+  var allAudio = document.querySelectorAll('audio');
+
+  allAudio.forEach(node => {
+    node.pause()
+  })
+}
+
+
+function currentlyPlaying(){
+  var allAudio = document.querySelectorAll('audio');
+  allAudio.forEach(node => {
+    if (!node.paused){
+      return true;
+    }
+
+  return false;
+
+  })
+}
+
