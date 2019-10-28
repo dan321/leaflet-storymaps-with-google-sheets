@@ -334,7 +334,7 @@ $(window).on('load', function() {
 
           // changeMarkerColor(i, 'blue', 'black');
 
-          
+
           openMarkerPopup(i);
 
 
@@ -465,12 +465,16 @@ $(window).on('load', function() {
 
 // Test function for iterating through points
 function playLoop(markers) {
+
+  // Click a random marker once without delay
+  markers[Math.floor(Math.random() * markers.length)].fire("click")
   
+  // Repeat every 20 seconds or so
   playInterval = setInterval(function(){
     let randomMarker = markers[Math.floor(Math.random() * markers.length)];
     randomMarker.fire("click");
     
-  }, 22000);
+  }, 21000);
 
 }
 
@@ -489,7 +493,7 @@ function pauseAllAudio(){
 }
 
 
-function currentlyPlaying(){
+function isPlaying(){
   var allAudio = document.querySelectorAll('audio');
   allAudio.forEach(node => {
     if (!node.paused){
