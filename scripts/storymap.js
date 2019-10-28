@@ -474,12 +474,13 @@ function playLoop(markers) {
     let randomMarker = markers[Math.floor(Math.random() * markers.length)];
     randomMarker.fire("click");
     
-  }, 21000);
+  }, 22000);
 
 }
 
 function stopLoop(){
   clearInterval(playInterval);
+  pauseAllAudio();
 }
 
 
