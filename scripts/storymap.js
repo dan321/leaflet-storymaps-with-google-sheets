@@ -8,6 +8,9 @@ $(window).on('load', function() {
   var markers = [];
 
 
+  // Placeholder for currently selected audio
+  var currentAudio;
+
   // Interval function for playback
   // Defined in global scope so that it can easily be stoppe/started
   var playInterval;
@@ -313,11 +316,13 @@ $(window).on('load', function() {
 
 
           // Play current audio element
-          document.querySelector('div#container' + i)
-                  .querySelector("audio")
-                  .play()
-                  .catch(error => console.log(`Play prevented ${error}`));
+          currentlyPlaying = document.querySelector('div#container' + i)
+          .querySelector("audio")
 
+          setTimeout(function(){
+            currentlyPlaying.play()
+                            .catch(error => console.log(`Play prevented ${error}`));
+          }, 500)
           
 
           currentlyInFocus = i;
@@ -328,6 +333,8 @@ $(window).on('load', function() {
           }
 
           // changeMarkerColor(i, 'blue', 'black');
+
+          
           openMarkerPopup(i);
 
 
