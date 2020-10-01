@@ -129,7 +129,7 @@ $(window).on('load', function() {
 
     document.title = getSetting('_mapTitle');
     $('#title').append('<h3>' + getSetting('_mapTitle') + '</h3>');
-    $('#title').append('<small>' + getSetting('_mapSubtitle') + '</small>');
+    $('#title').append(`<a href=${getSetting('_mapSubtitle')}><small>${getSetting('_mapSubtitle')}</small></a>`);
 
     // Load tiles
     addBaseMap();
@@ -219,9 +219,10 @@ $(window).on('load', function() {
       var mediaContainer = null;
 
       // Add media source
+      // Default link changed from Media Credit Link to Source
       var source = $('<a>', {
         text: c['Media Credit'],
-        href: c['Media Credit Link'],
+        href: c['Source'],
         target: "_blank",
         class: 'source'
       });
@@ -271,7 +272,7 @@ $(window).on('load', function() {
       container
         .append('<p class="chapter-header">' + c['Chapter'] + '\xa0'+ typeSymbol +'</p>')
         .append(media ? mediaContainer : '')
-        // .append(media ? source : '')
+        .append(media ? source : '')
         .append('<p class="description">' + c['Description'] + '</p>');
 
       $('#contents').append(container);
