@@ -1,4 +1,4 @@
-$(window).on('load', function() {
+$(window).on('load', function () {
   var documentSettings = {};
 
   // Continuous play variable
@@ -20,27 +20,26 @@ $(window).on('load', function() {
 
   // This watches for the scrollable container
   var scrollPosition = 0;
-  $('div#contents').scroll(function() {
+  $('div#contents').scroll(function () {
     scrollPosition = $(this).scrollTop();
   });
 
+  $.get('csv/Options.csv', function (options) {
+
+    $.get('csv/Chapters.csv', function (chapters) {
+      initMap(
+        $.csv.toObjects(options),
+        $.csv.toObjects(chapters)
+      )
+    }).fail(function (e) {
+      alert('Found Options.csv, but could not read Chapters.csv')
+    });
+  });
+
   /**
-   * Triggers the load of the spreadsheet and map creation
+   * Reformulates documentSettings as a dictionary, e.g.
+   * {"webpageTitle": "Leaflet Boilerplate", "infoPopupText": "Stuff"}
    */
-   var mapData;
-
-   // Use Tabletop to fetch data from the Google sheet
-   mapData = Tabletop.init({
-     key: googleDocURL,
-     callback: function(data, mapData) { 
-       initMap(); 
-      }
-   });
-
-  /**
-  * Reformulates documentSettings as a dictionary, e.g.
-  * {"webpageTitle": "Leaflet Boilerplate", "infoPopupText": "Stuff"}
-  */
   function createDocumentSettings(settings) {
     for (var i in settings) {
       var setting = settings[i];
@@ -64,7 +63,9 @@ $(window).on('load', function() {
    */
   function trySetting(s, def) {
     s = getSetting(s);
-    if (!s || s.trim() === '') { return def; }
+    if (!s || s.trim() === '') {
+      return def;
+    }
     return s;
   }
 
@@ -79,51 +80,40 @@ $(window).on('load', function() {
   }
 
   // Add play button
-  function addPlayButton(){
+  function addPlayButton() {
     L.easyButton({
-      id: 'play-button',  // an id for the generated button
-      position: 'topright',      // inherited from L.Control -- the corner it goes in
-      type: 'replace',          // set to animate when you're comfy with css
-      leafletClasses: true,     // use leaflet classes to style the button?
-      states:[{                 // specify different icons and responses for your button
-        stateName: 'play',
-        onClick: function(button, map){
-          console.log("Starting playback");
-          playLoop(markers);
-          button.state("stop");
+      id: 'play-button', // an id for the generated button
+      position: 'topright', // inherited from L.Control -- the corner it goes in
+      type: 'replace', // set to animate when you're comfy with css
+      leafletClasses: true, // use leaflet classes to style the button?
+      states: [{ // specify different icons and responses for your button
+          stateName: 'play',
+          onClick: function (button, map) {
+            console.log("Starting playback");
+            playLoop(markers);
+            button.state("stop");
+          },
+          title: 'Click to play recordings in sequence',
+          icon: 'fa-play'
         },
-        title: 'Click to play recordings in sequence',
-        icon: 'fa-play'
-      },
-      {                 
-        stateName: 'stop',
-        onClick: function(button, map){
-          console.log("Stopping playback");
-          stopLoop();
-          button.state("play");
+        {
+          stateName: 'stop',
+          onClick: function (button, map) {
+            console.log("Stopping playback");
+            stopLoop();
+            button.state("play");
+          },
+          title: 'Click to stop playback',
+          icon: 'fa-stop'
         },
-        title: 'Click to stop playback',
-        icon: 'fa-stop'
-      },
-    ]
+      ]
     }).addTo(map);
   }
 
 
 
-  function initMap() {
-    var options = mapData.sheets(constants.optionsSheetName).elements;
+  function initMap(options, chapters) {
     createDocumentSettings(options);
-
-    /* Change narrative width */
-    /*
-    narrativeWidth = parseInt(getSetting('_narrativeWidth'));
-    if (narrativeWidth > 0 && narrativeWidth < 100) {
-      var mapWidth = 100 - narrativeWidth;
-
-      $('#narration, #title').css('width', narrativeWidth + 'vw');
-      $('#map').css('width', mapWidth + 'vw');
-    } */
 
     var chapterContainerMargin = 70;
 
@@ -144,40 +134,28 @@ $(window).on('load', function() {
       }).addTo(map);
     }
 
-    var chapters = mapData.sheets(constants.chaptersSheetName).elements;
-
-    changeMarkerColor = function(n, from, to) {
+    changeMarkerColor = function (n, from, to) {
       markers[n]._icon.className = markers[n]._icon.className.replace(from, to);
     }
 
-    var openMarkerPopup = function(n) {
+    var openMarkerPopup = function (n) {
       markers[n].openPopup();
     }
 
-    var closeMarkerPopup = function(n) {
+    var closeMarkerPopup = function (n) {
       markers[n].closePopup();
     }
-
-    // var bringMarkerToFront = function(n) {
-    //   markers[n].zIndexOffset = 100;
-    // }
-
-    // var bringMarkerToBack = function(n) {
-    //   markers[n].zIndexOffset = 0;
-    // }
-
-
 
     var pixelsAbove = [];
     var chapterCount = 0;
 
     var currentlyInFocus; // integer to specify each chapter is currently in focus
-    var overlay;  // URL of the overlay for in-focus chapter
+    var overlay; // URL of the overlay for in-focus chapter
 
     for (i in chapters) {
       var c = chapters[i];
 
-      if ( !isNaN(parseFloat(c['Latitude'])) && !isNaN(parseFloat(c['Longitude']))) {
+      if (!isNaN(parseFloat(c['Latitude'])) && !isNaN(parseFloat(c['Longitude']))) {
         var lat = parseFloat(c['Latitude']);
         var lon = parseFloat(c['Longitude']);
 
@@ -188,8 +166,7 @@ $(window).on('load', function() {
                 icon: 'fa fa-music',
                 markerColor: 'red'
               })
-            }
-           ).bindPopup(`<p>${c["Chapter"]}</p>`)
+            }).bindPopup(`<p>${c["Chapter"]}</p>`)
           )
         } else if (c['Type'] === "speech") {
           markers.push(
@@ -198,8 +175,7 @@ $(window).on('load', function() {
                 icon: 'fa fa-comment',
                 markerColor: 'blue'
               })
-            }
-            ).bindPopup(`<p>${c["Chapter"]}</p>`)
+            }).bindPopup(`<p>${c["Chapter"]}</p>`)
           )
         }
 
@@ -267,10 +243,10 @@ $(window).on('load', function() {
         }).append(media).after(source);
       }
 
-      var typeSymbol = c["Type"] === "music" ? "<i class='fa fa-music'></i>": "<i class='fa fa-comment'></i>";
+      var typeSymbol = c["Type"] === "music" ? "<i class='fa fa-music'></i>" : "<i class='fa fa-comment'></i>";
 
       container
-        .append('<p class="chapter-header">' + c['Chapter'] + '\xa0'+ typeSymbol +'</p>')
+        .append('<p class="chapter-header">' + c['Chapter'] + '\xa0' + typeSymbol + '</p>')
         .append(media ? mediaContainer : '')
         .append(media ? source : '')
         .append('<p class="description">' + c['Description'] + '</p>');
@@ -293,11 +269,11 @@ $(window).on('load', function() {
     // For each block (chapter), calculate how many pixels above it
     pixelsAbove[0] = -100;
     for (i = 1; i < chapters.length; i++) {
-      pixelsAbove[i] = pixelsAbove[i-1] + $('div#container' + (i-1)).height() + chapterContainerMargin;
+      pixelsAbove[i] = pixelsAbove[i - 1] + $('div#container' + (i - 1)).height() + chapterContainerMargin;
     }
     pixelsAbove.push(Number.MAX_VALUE);
 
-    $('div#contents').scroll(function() {
+    $('div#contents').scroll(function () {
       var currentPosition = $(this).scrollTop();
 
       // Make title disappear on scroll
@@ -306,11 +282,11 @@ $(window).on('load', function() {
       }
 
       for (i = 0; i < pixelsAbove.length - 1; i++) {
-        if (currentPosition >= pixelsAbove[i] && currentPosition < (pixelsAbove[i+1] - 2 * chapterContainerMargin) && currentlyInFocus != i) {
+        if (currentPosition >= pixelsAbove[i] && currentPosition < (pixelsAbove[i + 1] - 2 * chapterContainerMargin) && currentlyInFocus != i) {
           // Remove styling for the old in-focus chapter and
           // add it to the new active chapter
           $('.chapter-container').removeClass("in-focus").addClass("out-focus");
-          $('div#container' + i).addClass("in-focus").removeClass("out-focus"); 
+          $('div#container' + i).addClass("in-focus").removeClass("out-focus");
 
           // Pause all current audio
           pauseAllAudio();
@@ -318,13 +294,13 @@ $(window).on('load', function() {
 
           // Play current audio element
           currentlyPlaying = document.querySelector('div#container' + i)
-          .querySelector("audio")
+            .querySelector("audio")
 
-          setTimeout(function(){
+          setTimeout(function () {
             currentlyPlaying.play()
-                            .catch(error => console.log(`Play prevented ${error}`));
+              .catch(error => console.log(`Play prevented ${error}`));
           }, 500)
-          
+
 
           currentlyInFocus = i;
 
@@ -332,9 +308,6 @@ $(window).on('load', function() {
             // changeMarkerColor(k, 'black', 'blue');
             closeMarkerPopup(k);
           }
-
-          // changeMarkerColor(i, 'blue', 'black');
-
 
           openMarkerPopup(i);
 
@@ -350,9 +323,9 @@ $(window).on('load', function() {
             var url = chapters[i]['Overlay'];
 
             if (url.split('.').pop() == 'geojson') {
-              $.getJSON(url, function(geojson) {
+              $.getJSON(url, function (geojson) {
                 overlay = L.geoJson(geojson, {
-                  style: function(feature) {
+                  style: function (feature) {
                     return {
                       fillColor: feature.properties.COLOR,
                       weight: 1,
@@ -364,7 +337,9 @@ $(window).on('load', function() {
                 }).addTo(map);
               });
             } else {
-              overlay = L.tileLayer(chapters[i]['Overlay'], {opacity: opacity}).addTo(map);
+              overlay = L.tileLayer(chapters[i]['Overlay'], {
+                opacity: opacity
+              }).addTo(map);
             }
 
           }
@@ -418,10 +393,11 @@ $(window).on('load', function() {
       if (markers[i]) {
         markers[i].addTo(map);
         markers[i]['_pixelsAbove'] = pixelsAbove[i];
-        markers[i].on('click', function() {
+        markers[i].on('click', function () {
           var pixels = parseInt($(this)[0]['_pixelsAbove']) + 5;
           $('div#contents').animate({
-            scrollTop: pixels + 'px'});
+            scrollTop: pixels + 'px'
+          });
         });
         bounds.push(markers[i].getLatLng());
       }
@@ -432,7 +408,9 @@ $(window).on('load', function() {
     $('div.loader').css('visibility', 'hidden');
 
     $('div#container0').addClass("in-focus");
-    $('div#contents').animate({scrollTop: '1px'});
+    $('div#contents').animate({
+      scrollTop: '1px'
+    });
 
   }
 
@@ -447,7 +425,9 @@ $(window).on('load', function() {
     var url = getSetting('_authorURL');
 
     if (name && url) {
-      if (url.indexOf('@') > 0) { url = 'mailto:' + url; }
+      if (url.indexOf('@') > 0) {
+        url = 'mailto:' + url;
+      }
       credit += ' by <a href="' + url + '">' + name + '</a> | ';
     } else if (name) {
       credit += ' by ' + name + ' | ';
@@ -469,23 +449,23 @@ function playLoop(markers) {
 
   // Click a random marker once without delay
   markers[Math.floor(Math.random() * markers.length)].fire("click")
-  
+
   // Repeat every 20 seconds or so
-  playInterval = setInterval(function(){
+  playInterval = setInterval(function () {
     let randomMarker = markers[Math.floor(Math.random() * markers.length)];
     randomMarker.fire("click");
-    
+
   }, 22000);
 
 }
 
-function stopLoop(){
+function stopLoop() {
   clearInterval(playInterval);
   pauseAllAudio();
 }
 
 
-function pauseAllAudio(){
+function pauseAllAudio() {
   // Pause all audio on page
   var allAudio = document.querySelectorAll('audio');
 
@@ -495,15 +475,14 @@ function pauseAllAudio(){
 }
 
 
-function isPlaying(){
+function isPlaying() {
   var allAudio = document.querySelectorAll('audio');
   allAudio.forEach(node => {
-    if (!node.paused){
+    if (!node.paused) {
       return true;
     }
 
-  return false;
+    return false;
 
   })
 }
-

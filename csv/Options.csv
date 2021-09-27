@@ -1,0 +1,18 @@
+Setting,Customize,Hints,Examples
+Storymap Info,,,
+Storymap Title,PARADISEC Soundscape,,
+Storymap Subtitle,Sample files from the Pacific and Regional Archive for Digital Sources in Endangered Cultures (PARADISEC)        http://catalog.paradisec.org.au,,
+Map Settings,,,
+Basemap Tiles,Stamen.Watercolor,Drop-down menu for background basemap tiles,https://leaflet-extras.github.io/leaflet-providers/preview/
+Zoom Controls,bottomright,,
+Narrative Background Color,,,
+Narrative Text Color,,,
+Narrative Link Color,,,
+Active Chapter Background Color,,,
+Media Container Height,200,"Maximum height of the image, in pixels. 200 is default. The image will be fit into the container with its proportions kept (it won't be skewed).",
+Pixels After Final Chapter,100,In pixels. At least 100,
+Credits,,,
+Author Name,"Nick Thieberger, Daniel Russo-Batterham","Appears in map credits as ""View data by.."" (or leave blank)",
+Author Email or Website,thien@unimelb.edu.au,Create link in Author Name by inserting your email or web address (or leave blank),
+Author GitHub Repo Link,,"Appears in map credits as ""View code.."" link (leave as-is OR insert link to your own GitHub code repo)",
+Code Credit,"<a href=""http://datavizforall.org"">DataVizForAll</a>",,
