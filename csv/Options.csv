@@ -3,7 +3,7 @@ Storymap Info,,,
 Storymap Title,PARADISEC Soundscape,,
 Storymap Subtitle,Sample files from the Pacific and Regional Archive for Digital Sources in Endangered Cultures (PARADISEC)        http://catalog.paradisec.org.au,,
 Map Settings,,,
-Basemap Tiles,Stamen.Watercolor,Drop-down menu for background basemap tiles,https://leaflet-extras.github.io/leaflet-providers/preview/
+Basemap Tiles,OpenStreetMap.Mapnik,Drop-down menu for background basemap tiles,https://leaflet-extras.github.io/leaflet-providers/preview/
 Zoom Controls,bottomright,,
 Narrative Background Color,,,
 Narrative Text Color,,,
